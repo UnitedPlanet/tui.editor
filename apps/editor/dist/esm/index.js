@@ -1,6 +1,6 @@
 /**
  * @toast-ui/editor
- * @version 3.1.10 | Mon Dec 12 2022
+ * @version 3.2.1 | Thu Jan 05 2023
  * @author NHN Cloud FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */
@@ -1169,8 +1169,10 @@ function unwrapWidgetSyntax(text) {
     }
     return text;
 }
+// up changes
 function createWidgetContent(info, text) {
-    return "$$" + info + " " + text + "$$";
+    // return `$$${info} ${text}$$`;
+    return "" + text;
 }
 function widgetToDOM(info, text) {
     var _a = widgetRuleMap[info], rule = _a.rule, toDOM = _a.toDOM;
@@ -1536,6 +1538,14 @@ function replaceBRWithEmptyBlock(html) {
         }
     });
     return replacedHTML;
+}
+function removeProseMirrorHackNodes(html) {
+    var reProseMirrorImage = /<img class="ProseMirror-separator" alt="">/g;
+    var reProseMirrorTrailingBreak = / class="ProseMirror-trailingBreak"/g;
+    var resultHTML = html;
+    resultHTML = resultHTML.replace(reProseMirrorImage, '');
+    resultHTML = resultHTML.replace(reProseMirrorTrailingBreak, '');
+    return resultHTML;
 }
 
 var pluginKey$1 = new PluginKey('widget');
@@ -15660,7 +15670,7 @@ var MarkdownPreview = /** @class */ (function () {
         return this.el;
     };
     MarkdownPreview.prototype.getHTML = function () {
-        return this.previewContent.innerHTML;
+        return removeProseMirrorHackNodes(this.previewContent.innerHTML);
     };
     MarkdownPreview.prototype.setHTML = function (html) {
         this.previewContent.innerHTML = html;
@@ -16338,9 +16348,13 @@ var CellSelection = /** @class */ (function (_super) {
             }
             var copiedRow = row.copy(Fragment.from(cells));
             var targetNode = isTableHeadCell ? tableHead : tableBody;
+            // @ts-ignore
             targetNode.content = targetNode.content.append(Fragment.from(copiedRow));
         }
         return new Slice(createTableFragment(tableHead, tableBody), 1, 1);
+    };
+    CellSelection.prototype.toJSON = function () {
+        return JSON.stringify(this);
     };
     return CellSelection;
 }(Selection));
@@ -17120,7 +17134,6 @@ var CODE_BLOCK_LANG_CLASS_NAME = 'toastui-editor-ww-code-block-language';
 var CodeBlockView = /** @class */ (function () {
     function CodeBlockView(node, view, getPos, eventEmitter) {
         var _this = this;
-        this.dom = null;
         this.contentDOM = null;
         this.input = null;
         this.timer = null;
@@ -19629,7 +19642,7 @@ var WysiwygEditor = /** @class */ (function (_super) {
         return this.specs.commands(this.view, getWwCommands());
     };
     WysiwygEditor.prototype.getHTML = function () {
-        return this.view.dom.innerHTML;
+        return removeProseMirrorHackNodes(this.view.dom.innerHTML);
     };
     WysiwygEditor.prototype.getModel = function () {
         return this.view.state.doc;
@@ -20799,9 +20812,7 @@ var nodeTypeWriters = {
             var nextNode = index < parent.childCount - 1 && parent.child(index + 1);
             var nextParaNode = nextNode && nextNode.type.name === 'paragraph';
             var emptyNode = node.childCount === 0;
-            if (emptyNode && prevEmptyNode) {
-                state.write('<br>\n');
-            }
+            if (emptyNode && prevEmptyNode) ;
             else if (emptyNode && !prevEmptyNode && !firstChildNode) {
                 if ((parent === null || parent === void 0 ? void 0 : parent.type.name) === 'listItem') {
                     var prevDelim = state.getDelim();
@@ -21163,40 +21174,43 @@ var toMdConvertors = {
             text: node.textContent,
         };
     },
-    strong: function (_a, _b, betweenSpace) {
+    // up changes
+    strong: function (_a, _b) {
         var node = _a.node;
         var entering = _b.entering;
         var rawHTML = node.attrs.rawHTML;
         var delim = '**';
-        if (!betweenSpace) {
-            delim = entering ? '<strong>' : '</strong>';
-        }
+        // if (!betweenSpace) {
+        //   // delim = entering ? '<strong>' : '</strong>';
+        // }
         return {
             delim: delim,
             rawHTML: entering ? getOpenRawHTML(rawHTML) : getCloseRawHTML(rawHTML),
         };
     },
-    emph: function (_a, _b, betweenSpace) {
+    // up changes
+    emph: function (_a, _b) {
         var node = _a.node;
         var entering = _b.entering;
         var rawHTML = node.attrs.rawHTML;
         var delim = '*';
-        if (!betweenSpace) {
-            delim = entering ? '<em>' : '</em>';
-        }
+        // if (!betweenSpace) {
+        //   delim = entering ? '<em>' : '</em>';
+        // }
         return {
             delim: delim,
             rawHTML: entering ? getOpenRawHTML(rawHTML) : getCloseRawHTML(rawHTML),
         };
     },
-    strike: function (_a, _b, betweenSpace) {
+    // up changes
+    strike: function (_a, _b) {
         var node = _a.node;
         var entering = _b.entering;
         var rawHTML = node.attrs.rawHTML;
         var delim = '~~';
-        if (!betweenSpace) {
-            delim = entering ? '<del>' : '</del>';
-        }
+        // if (!betweenSpace) {
+        //   delim = entering ? '<del>' : '</del>';
+        // }
         return {
             delim: delim,
             rawHTML: entering ? getOpenRawHTML(rawHTML) : getCloseRawHTML(rawHTML),
@@ -21669,22 +21683,40 @@ var Convertor = /** @class */ (function () {
     return Convertor;
 }());
 
-function execPlugin(plugin, eventEmitter, usageStatistics) {
+function execPlugin(pluginInfo) {
+    var plugin = pluginInfo.plugin, eventEmitter = pluginInfo.eventEmitter, usageStatistics = pluginInfo.usageStatistics, instance = pluginInfo.instance;
     var pmState = { Plugin: Plugin, PluginKey: PluginKey, Selection: Selection, TextSelection: TextSelection };
     var pmView = { Decoration: Decoration, DecorationSet: DecorationSet };
     var pmModel = { Fragment: Fragment };
     var pmRules = { InputRule: InputRule, inputRules: inputRules, undoInputRule: undoInputRule };
-    var context = { eventEmitter: eventEmitter, usageStatistics: usageStatistics, pmState: pmState, pmView: pmView, pmModel: pmModel, pmRules: pmRules, i18n: i18n };
+    var pmKeymap = { keymap: keymap };
+    var context = {
+        eventEmitter: eventEmitter,
+        usageStatistics: usageStatistics,
+        instance: instance,
+        pmState: pmState,
+        pmView: pmView,
+        pmModel: pmModel,
+        pmRules: pmRules,
+        pmKeymap: pmKeymap,
+        i18n: i18n,
+    };
     if (isArray_1(plugin)) {
         var pluginFn = plugin[0], _a = plugin[1], options = _a === void 0 ? {} : _a;
         return pluginFn(context, options);
     }
     return plugin(context);
 }
-function getPluginInfo(plugins, eventEmitter, usageStatistics) {
+function getPluginInfo(pluginsInfo) {
+    var plugins = pluginsInfo.plugins, eventEmitter = pluginsInfo.eventEmitter, usageStatistics = pluginsInfo.usageStatistics, instance = pluginsInfo.instance;
     eventEmitter.listen('mixinTableOffsetMapPrototype', mixinTableOffsetMapPrototype);
     return (plugins !== null && plugins !== void 0 ? plugins : []).reduce(function (acc, plugin) {
-        var pluginInfoResult = execPlugin(plugin, eventEmitter, usageStatistics);
+        var pluginInfoResult = execPlugin({
+            plugin: plugin,
+            eventEmitter: eventEmitter,
+            usageStatistics: usageStatistics,
+            instance: instance,
+        });
         if (!pluginInfoResult) {
             throw new Error('The return value of the executed plugin is empty.');
         }
@@ -21776,7 +21808,12 @@ var ToastUIEditorViewer = /** @class */ (function () {
         }, options);
         this.eventEmitter = new EventEmitter();
         var linkAttributes = sanitizeLinkAttribute(this.options.linkAttributes);
-        var _a = getPluginInfo(this.options.plugins, this.eventEmitter, this.options.usageStatistics) || {}, toHTMLRenderers = _a.toHTMLRenderers, markdownParsers = _a.markdownParsers;
+        var _a = getPluginInfo({
+            plugins: this.options.plugins,
+            eventEmitter: this.eventEmitter,
+            usageStatistics: this.options.usageStatistics,
+            instance: this,
+        }) || {}, toHTMLRenderers = _a.toHTMLRenderers, markdownParsers = _a.markdownParsers;
         var _b = this.options, customHTMLRenderer = _b.customHTMLRenderer, extendedAutolinks = _b.extendedAutolinks, referenceDefinition = _b.referenceDefinition, frontMatter = _b.frontMatter, customHTMLSanitizer = _b.customHTMLSanitizer;
         var rendererOptions = {
             linkAttributes: linkAttributes,
@@ -22329,7 +22366,12 @@ var ToastUIEditorCore = /** @class */ (function () {
         this.eventEmitter = new EventEmitter();
         setWidgetRules(widgetRules);
         var linkAttributes = sanitizeLinkAttribute(this.options.linkAttributes);
-        this.pluginInfo = getPluginInfo(this.options.plugins, this.eventEmitter, this.options.usageStatistics);
+        this.pluginInfo = getPluginInfo({
+            plugins: this.options.plugins,
+            eventEmitter: this.eventEmitter,
+            usageStatistics: this.options.usageStatistics,
+            instance: this,
+        });
         var _b = this.pluginInfo, toHTMLRenderers = _b.toHTMLRenderers, toMarkdownRenderers = _b.toMarkdownRenderers, mdPlugins = _b.mdPlugins, wwPlugins = _b.wwPlugins, wwNodeViews = _b.wwNodeViews, mdCommands = _b.mdCommands, wwCommands = _b.wwCommands, markdownParsers = _b.markdownParsers;
         var rendererOptions = {
             linkAttributes: linkAttributes,
@@ -22583,7 +22625,7 @@ var ToastUIEditorCore = /** @class */ (function () {
                 _this.wwEditor.setModel(wwNode);
             }
         });
-        var html = this.wwEditor.view.dom.innerHTML;
+        var html = removeProseMirrorHackNodes(this.wwEditor.view.dom.innerHTML);
         if (this.placeholder) {
             var rePlaceholder = new RegExp("<span class=\"placeholder[^>]+>" + this.placeholder + "</span>", 'i');
             return html.replace(rePlaceholder, '');

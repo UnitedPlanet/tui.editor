@@ -81,7 +81,7 @@ export const nodeTypeWriters: ToMdNodeTypeWriterMap = {
       const emptyNode = node.childCount === 0;
 
       if (emptyNode && prevEmptyNode) {
-        state.write('<br>\n');
+        // state.write('<br>\n');
       } else if (emptyNode && !prevEmptyNode && !firstChildNode) {
         if (parent?.type.name === 'listItem') {
           const prevDelim = state.getDelim();
