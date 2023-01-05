@@ -15,6 +15,7 @@ import {
   MarkInfo,
 } from '@t/convertor';
 import { WwNodeType, WwMarkType } from '@t/wysiwyg';
+import Editor from '@t/index';
 
 function addBackticks(node: ProsemirrorNode, side: number) {
   const { text } = node;
@@ -207,14 +208,14 @@ export const toMdConvertors: ToMdConvertorMap = {
       text: (node as ProsemirrorNode).textContent,
     };
   },
-
-  strong({ node }, { entering }, betweenSpace) {
+  // up changes
+  strong({ node }, { entering }) {
     const { rawHTML } = node.attrs;
-    let delim = '**';
+    const delim = '**';
 
-    if (!betweenSpace) {
-      delim = entering ? '<strong>' : '</strong>';
-    }
+    // if (!betweenSpace) {
+    //   // delim = entering ? '<strong>' : '</strong>';
+    // }
 
     return {
       delim,
@@ -222,13 +223,14 @@ export const toMdConvertors: ToMdConvertorMap = {
     };
   },
 
-  emph({ node }, { entering }, betweenSpace) {
+  // up changes
+  emph({ node }, { entering }) {
     const { rawHTML } = node.attrs;
-    let delim = '*';
+    const delim = '*';
 
-    if (!betweenSpace) {
-      delim = entering ? '<em>' : '</em>';
-    }
+    // if (!betweenSpace) {
+    //   delim = entering ? '<em>' : '</em>';
+    // }
 
     return {
       delim,
@@ -236,13 +238,14 @@ export const toMdConvertors: ToMdConvertorMap = {
     };
   },
 
-  strike({ node }, { entering }, betweenSpace) {
+  // up changes
+  strike({ node }, { entering }) {
     const { rawHTML } = node.attrs;
-    let delim = '~~';
+    const delim = '~~';
 
-    if (!betweenSpace) {
-      delim = entering ? '<del>' : '</del>';
-    }
+    // if (!betweenSpace) {
+    //   delim = entering ? '<del>' : '</del>';
+    // }
 
     return {
       delim,
