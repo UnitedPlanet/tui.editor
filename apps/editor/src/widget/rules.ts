@@ -22,8 +22,10 @@ export function unwrapWidgetSyntax(text: string) {
   return text;
 }
 
+// up changes
 export function createWidgetContent(info: string, text: string) {
-  return `$$${info} ${text}$$`;
+  // return `$$${info} ${text}$$`;
+  return `${text}`;
 }
 
 export function widgetToDOM(info: string, text: string) {
