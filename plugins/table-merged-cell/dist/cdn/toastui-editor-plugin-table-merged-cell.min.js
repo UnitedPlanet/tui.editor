@@ -1,6 +1,6 @@
 /*!
  * TOAST UI Editor : Table Merged Cell Plugin
- * @version 3.1.0 | Thu Jan 05 2023
+ * @version 3.1.0 | Fri Jan 13 2023
  * @author NHN Cloud FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */

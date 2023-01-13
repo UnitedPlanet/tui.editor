@@ -1,6 +1,6 @@
 /*!
  * @toast-ui/editor
- * @version 3.2.1 | Thu Jan 05 2023
+ * @version 3.2.1 | Fri Jan 13 2023
  * @author NHN Cloud FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */
@@ -18532,6 +18532,7 @@ var CodeBlockView = /** @class */ (function () {
         this.bindDOMEvent();
         this.bindEvent();
     }
+    // up changes
     CodeBlockView.prototype.createElement = function () {
         var language = this.node.attrs.language;
         var wrapper = document.createElement('div');
@@ -18542,6 +18543,14 @@ var CodeBlockView = /** @class */ (function () {
         wrapper.appendChild(pre);
         this.dom = wrapper;
         this.contentDOM = code;
+        this._dispatchEvent();
+    };
+    // up changes
+    CodeBlockView.prototype._dispatchEvent = function () {
+        window.setTimeout(function () {
+            var insertEvent = new CustomEvent('ix-codeblock');
+            document.dispatchEvent(insertEvent);
+        }, 1000);
     };
     CodeBlockView.prototype.createCodeBlockElement = function () {
         var pre = document.createElement('pre');

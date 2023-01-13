@@ -1,6 +1,6 @@
 /*!
  * TOAST UI Editor : UML Plugin
- * @version 3.0.1 | Thu Jan 05 2023
+ * @version 3.0.1 | Fri Jan 13 2023
  * @author NHN Cloud FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */

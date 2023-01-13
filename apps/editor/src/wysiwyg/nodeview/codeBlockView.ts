@@ -47,6 +47,7 @@ export class CodeBlockView implements NodeView {
     this.bindEvent();
   }
 
+  // up changes
   private createElement() {
     const { language } = this.node.attrs;
     const wrapper = document.createElement('div');
@@ -61,6 +62,16 @@ export class CodeBlockView implements NodeView {
 
     this.dom = wrapper;
     this.contentDOM = code;
+    this._dispatchEvent();
+  }
+
+  // up changes
+  private _dispatchEvent() {
+    window.setTimeout(() => {
+      const insertEvent = new CustomEvent('ix-codeblock');
+
+      document.dispatchEvent(insertEvent);
+    }, 1000);
   }
 
   private createCodeBlockElement() {
